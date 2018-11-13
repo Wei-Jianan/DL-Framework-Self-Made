@@ -1,4 +1,57 @@
+iclass Gate:
+    def __init__(self, name="virtual Gate", is_attached=False):
+        self._from = []
+        self._to = [] 
+        self._value = None
+        self._grad = 0
+        self._name = name
+        self.is_loss = False
+        self.is_attached = is_attached
+    
+    def __repr__(self):
+        return '<{0} named {1} at {2}>'.format(
+                self.__class__.__name__, self._name, hex(id(self)))
+    
+        
+    def forward(self):
+        raise NotImplementedError
+    
+    def backward(self):
+        raise NotImplementedError
+        
+    def __add__(self, rhs):
+        if isinstance(rhs, Gate):
+            return AddGate(self, rhs)
+        else:
+            return AddGate(self, VariableGate(rhs))
+    
+    def __mul__(self, rhs):
+        if isinstance(rhs, Gate):
+            return MulGate(self, rhs)
+        else:
+            return MulGate(self, VariableGate(rhs))
+    
+
+        
+
+class VariableGate(Gate):
+    def __init__(self, value, name=None, **kwargs):
+        super(VariableGate, self).__init__(**kwargs)
+        self._value = value
+        self._grad = 0
+        if name is None:
+            self._name = 'InputGate <{0}>'.format(id(name))
+        else:
+            self._name = name
+    
+    def forward(self):
+        self._grad = 0
+    
+    def backward(self):
+        return 
+    
 class AddGate(Gate):
+
     def __init__(self, lhs, rhs, name=None, **kwargs):
         assert isinstance(lhs, Gate) and isinstance(rhs, Gate)
         super(AddGate, self).__init__(**kwargs)
